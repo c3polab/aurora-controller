@@ -1,0 +1,89 @@
+/*
+* Copyright (C) 2012 Texas Instruments Incorporated - http://www.ti.com/
+*
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Purpose License Version 2 as
+* published by the Free Software Foundation
+*
+* Original from: github.com/jadonk/validation-scripts/blob/master/test-capemgr/
+*
+* Modified by Derek Molloy for the example on www.derekmolloy.ie
+* that maps GPIO pins for the example
+*/
+
+/dts-v1/;
+/plugin/;
+
+/{
+       compatible = "ti,beaglebone", "ti,beaglebone-black";
+       part-number = "SPI0-Loop";
+       version = "00A0";
+
+       fragment@0 {
+             target = <&am33xx_pinmux>;
+
+             __overlay__ {
+                  spi0_loop: SPI0_loop {
+                        pinctrl-single,pins = <
+                                0x070 0x17  // P9_11 PINS$28 GPIO0_30 = 30 Output Mode7 pul$
+                                0x078 0x37  // P9_12 PINS$30 GPIO1_28 = 60 Input Mode7 pull$
+                                0x074 0x17  // P9_13 PINS$29 GPIO0_31 = 31 Output Mode7 pul$
+                                0x048 0x17  // P9_14 PINS$18 GPIO1_18 = 50 Output Mode7 pul$
+                                0x040 0x37  // P9_15 PINS$16 GPIO1_16 = 48 Inpu Mode7 pullu$
+                                0x1a8 0x27  // P9_41 PINS$109 GPIO3_20 = 116 Input Mode7 pu$
+                                0x034 0x07  // P8_11 PINS$13 GPIO1_13 = 45 Output Mode7 pul$
+                                0x150 0x30  // spi0_sclk.spi0_sclk Input Mode0 pullup
+                                0x154 0x30  // spi0_d0.spi0_d0 Input Mode0 pullup
+                                0x158 0x10  // spi0_d1.spi0_d1 Output Mode0 pullup
+                                0x15c 0x10  // spi0_cs0.spi0_cs0 Output Mode0 pullup
+
+                               // OUTPUT  GPIO(mode7) 0x07 pulldown, 0x17 pullup, 0x?f no p$
+                               // INPUT   GPIO(mode7) 0x27 pulldown, 0x37 pullup, 0x?f no p$
+                        >;
+                  };
+             };
+       };
+
+       fragment@1 {
+                target = <&ocp>;
+                __overlay__ {
+                        gpio_helper {
+                                compatible = "gpio-of-helper";
+                                status = "okay";
+                                pinctrl-names = "default";
+                                pinctrl-0 = <&spi0_loop>;
+                        };
+                };
+        };
+
+       fragment@2 {
+                target = <&spi0>;
+                __overlay__ {
+                        #address-cells = <1>;
+                        #size-cells = <0>;
+                        status = "okay";
+                        pinctrl-names = "default";
+                        pinctrl-0 = <&spi0_loop>;
+                        channel@0 {
+                                #address-cells = <1>;
+                                #size-cells = <0>;
+                                compatible = "spidev";
+                                reg = <0>;
+                                spi-max-frequency = <16000000>;
+                                spi-cpha;
+                        };
+                        channel@1 {
+                                #address-cells = <1>;
+                                #size-cells = <0>;
+                                compatible = "spidev";
+                                reg = <1>;
+                                spi-max-frequency = <16000000>;
+                                spi-cpha;
+                        };
+                };
+        };
+};
+
+
+
+
